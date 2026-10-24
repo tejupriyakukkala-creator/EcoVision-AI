@@ -31,7 +31,27 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 const UPLOAD_DIR = path.resolve('uploads');
 app.use('/uploads', express.static(UPLOAD_DIR));
 
-// API Root & Health Check
+// API Root Welcome & Health Check
+app.get('/', (_req, res) => {
+  res.json({
+    name: 'EcoVision AI Backend API',
+    status: 'online',
+    message: 'EcoVision AI Server is running successfully.',
+    version: '1.0.0',
+    endpoints: {
+      health: '/api/health',
+      auth: '/api/auth',
+      detections: '/api/detections',
+      analytics: '/api/analytics',
+      ecotwin: '/api/ecotwin',
+      ecoguard: '/api/ecoguard',
+      ecoroute: '/api/ecoroute',
+      ecopulse: '/api/ecopulse',
+      ecoloop: '/api/ecoloop',
+    },
+  });
+});
+
 app.get('/api/health', (_req, res) => {
   res.json({
     status: 'online',
