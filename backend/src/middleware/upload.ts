@@ -2,7 +2,7 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 
-const UPLOAD_DIR = path.resolve('uploads');
+const UPLOAD_DIR = process.env.VERCEL ? path.join('/tmp', 'uploads') : path.resolve('uploads');
 if (!fs.existsSync(UPLOAD_DIR)) {
   fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 }

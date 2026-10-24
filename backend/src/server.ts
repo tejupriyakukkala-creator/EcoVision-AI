@@ -55,6 +55,16 @@ app.use('/api/ecoroute', ecorouteRouter);
 app.use('/api/ecopulse', ecopulseRouter);
 app.use('/api/ecoloop', ecoloopRouter);
 
+// Lazy DB connection middleware for serverless invocations (e.g. Vercel)
+app.use(async (_req, _res, next) => {
+  try {
+    await connectDB();
+  } catch (err) {
+    console.warn('[Serverless DB Connect Warning]:', err);
+  }
+  next();
+});
+
 // Centralized error handler
 app.use(errorHandler);
 
@@ -72,7 +82,7 @@ export async function startServer() {
   }
 }
 
-if (process.env.NODE_ENV !== 'test') {
+if (process.env.NODE_ENV !== 'test' && !process.env.VERCEL) {
   startServer();
 }
 
