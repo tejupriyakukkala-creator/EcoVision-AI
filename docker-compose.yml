@@ -1,0 +1,78 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: ecovision-mongodb
+    restart: always
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongo_data:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: ecovision
+    networks:
+      - ecovision-net
+
+  ai-service:
+    build:
+      context: ./ai-service
+      dockerfile: Dockerfile
+    container_name: ecovision-ai-service
+    restart: always
+    ports:
+      - '8000:8000'
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8000
+      - DEVICE=cpu
+      - YOLO_CONF_THRESHOLD=0.25
+      - CNN_CONF_THRESHOLD=0.40
+      - ARDUINO_SIMULATION_MODE=true
+    networks:
+      - ecovision-net
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ecovision-backend
+    restart: always
+    ports:
+      - '5000:5000'
+    environment:
+      - PORT=5000
+      - NODE_ENV=production
+      - MONGODB_URI=mongodb://mongodb:27017/ecovision
+      - AI_SERVICE_URL=http://ai-service:8000
+      - JWT_SECRET=ecovision-production-jwt-secret-key-2026
+    depends_on:
+      - mongodb
+      - ai-service
+    volumes:
+      - backend_uploads:/app/uploads
+    networks:
+      - ecovision-net
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: ecovision-frontend
+    restart: always
+    ports:
+      - '3000:3000'
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:5000/api
+    depends_on:
+      - backend
+    networks:
+      - ecovision-net
+
+volumes:
+  mongo_data:
+  backend_uploads:
+
+networks:
+  ecovision-net:
+    driver: bridge
